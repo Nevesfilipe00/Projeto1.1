@@ -1,4 +1,0 @@
-Olá mundo!
-inclusao de novos arquivos 
-
-inclusao dos arquivos:  arquivo.txt e arquivo2.txt
