@@ -1,43 +1,72 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const uploadForm = document.getElementById('uploadForm');
+    const chooseFileButton = document.getElementById('chooseFileButton');
     const fileInput = document.getElementById('fileInput');
+    const qrCodeButton = document.getElementById('qrCodeButton');
+    const qrCodeContainer = document.getElementById('qrCodeContainer');
     const photoGallery = document.getElementById('photoGallery');
 
-    // Carregar fotos salvas no localStorage ao carregar a página
+    // Inicializar a galeria de fotos ao carregar a página
     loadPhotos();
 
-    uploadForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Prevenir o comportamento padrão do formulário
-        
-        const files = fileInput.files;
+    // Evento para abrir o seletor de arquivos
+    chooseFileButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Evento para manipular o upload de arquivos
+    fileInput.addEventListener('change', (event) => {
+        const files = event.target.files;
         if (files.length === 0) return;
 
-        // Ler e exibir cada arquivo selecionado
         Array.from(files).forEach(file => {
             const reader = new FileReader();
             reader.onload = () => {
                 const imageURL = reader.result;
-                addPhoto(imageURL); // Adicionar a foto na galeria
-                savePhoto(imageURL); // Salvar a foto no localStorage
+                addPhoto(imageURL);
+                savePhoto(imageURL);
             };
-            reader.readAsDataURL(file); // Ler o arquivo como uma URL de dados
+            reader.readAsDataURL(file);
         });
 
         fileInput.value = ''; // Limpar o input de arquivos
     });
 
+    // Evento para gerar o QR code
+    qrCodeButton.addEventListener('click', () => {
+        qrCodeContainer.style.display = 'block';
+
+        // Gerar QR code (supondo que a URL seja um link para capturar foto)
+        const url = window.location.href + 'capture.html'; // Suponha que 'capture.html' seja a página de captura
+        new QRCode(document.getElementById("qrCode"), {
+            text: url,
+            width: 200,
+            height: 200
+        });
+    });
+
     // Função para adicionar uma foto na galeria
     function addPhoto(url) {
+        const imgContainer = document.createElement('div');
+        imgContainer.classList.add('photo-container');
+
         const img = document.createElement('img');
         img.src = url;
         img.classList.add('photo-thumbnail');
-        img.addEventListener('click', () => {
+
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'Remover';
+        removeButton.classList.add('remove-button');
+
+        removeButton.addEventListener('click', () => {
             if (confirm('Deseja remover esta foto?')) {
-                removePhoto(url); // Remover a foto do localStorage
-                img.remove(); // Remover a foto da galeria
+                removePhoto(url);
+                imgContainer.remove();
             }
         });
-        photoGallery.appendChild(img); // Adicionar a imagem na galeria
+
+        imgContainer.appendChild(img);
+        imgContainer.appendChild(removeButton);
+        photoGallery.appendChild(imgContainer);
     }
 
     // Função para salvar uma foto no localStorage
@@ -47,22 +76,22 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('photos', JSON.stringify(photos));
     }
 
+    // Função para carregar fotos do localStorage
+    function loadPhotos() {
+        const photos = getSavedPhotos();
+        photos.forEach(photo => {
+            addPhoto(photo.url);
+        });
+        removeExpiredPhotos();
+    }
+
     // Função para obter as fotos salvas no localStorage
     function getSavedPhotos() {
         const saved = localStorage.getItem('photos');
         return saved ? JSON.parse(saved) : [];
     }
 
-    // Função para carregar as fotos salvas no localStorage
-    function loadPhotos() {
-        const photos = getSavedPhotos();
-        photos.forEach(photo => {
-            addPhoto(photo.url);
-        });
-        removeExpiredPhotos(); // Remover fotos expiradas
-    }
-
-    // Função para remover fotos que passaram de 48 horas
+    // Função para remover fotos expiradas
     function removeExpiredPhotos() {
         const photos = getSavedPhotos();
         const twoDaysInMillis = 48 * 60 * 60 * 1000;
@@ -82,6 +111,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Executar a remoção de fotos expiradas ao carregar a página
+    // Função para remover uma foto específica do localStorage
+    function removePhoto(url) {
+        let photos = getSavedPhotos();
+        photos = photos.filter(photo => photo.url !== url);
+        localStorage.setItem('photos', JSON.stringify(photos));
+    }
+
+    // Remover fotos expiradas ao carregar a página
     removeExpiredPhotos();
 });

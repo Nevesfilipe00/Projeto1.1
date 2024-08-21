@@ -3,18 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Fotos Temporárias</title>
+    <title>Envio de Fotos - Arquivo ou QR Code</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
     <div class="container">
-        <h1>Upload de Fotos Auditoria</h1>
-        <form id="uploadForm">
-            <input type="file" id="fileInput" accept="image/*" multiple>
-            <button type="submit">Upload</button>
-        </form>
+        <h1>Envio de Fotos</h1>
+        <div class="upload-options">
+            <button id="chooseFileButton" class="upload-button">Escolher Arquivo</button>
+            <button id="qrCodeButton" class="upload-button">Gerar QR Code</button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+        <div id="qrCodeContainer" style="display: none;">
+            <div id="qrCode"></div>
+            <p>Use o QR code para capturar uma foto diretamente da câmera.</p>
+        </div>
         <div id="photoGallery" class="photo-gallery"></div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="Jquery.js"></script>
 </body>
 </html>
