@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     qrCodeButton.addEventListener('click', () => {
         qrCodeContainer.style.display = 'block';
 
-        // Gerar QR code (supondo que a URL seja um link para capturar foto)
-        const url = window.location.href + 'capture.html'; // Suponha que 'capture.html' seja a página de captura
+        // Gerar QR code para a mesma página (simulando o upload via câmera)
+        const url = window.location.href;
         new QRCode(document.getElementById("qrCode"), {
             text: url,
             width: 200,
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Função para adicionar uma foto na galeria
-    function addPhoto(url) {
+    function addPhoto(url, dateInfo = null) {
         const imgContainer = document.createElement('div');
         imgContainer.classList.add('photo-container');
 
@@ -66,6 +66,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         imgContainer.appendChild(img);
         imgContainer.appendChild(removeButton);
+
+        // Adicionar data e dia da semana
+        const dateDisplay = document.createElement('p');
+        dateDisplay.textContent = dateInfo ? dateInfo : getFormattedDate(new Date());
+        imgContainer.appendChild(dateDisplay);
+
         photoGallery.appendChild(imgContainer);
     }
 
@@ -80,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadPhotos() {
         const photos = getSavedPhotos();
         photos.forEach(photo => {
-            addPhoto(photo.url);
+            addPhoto(photo.url, getFormattedDate(new Date(photo.timestamp)));
         });
         removeExpiredPhotos();
     }
@@ -94,12 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para remover fotos expiradas
     function removeExpiredPhotos() {
         const photos = getSavedPhotos();
-        const twoDaysInMillis = 48 * 60 * 60 * 1000;
+        const threeDaysInMillis = 72 * 60 * 60 * 1000; // 72 horas em milissegundos
         const now = new Date().getTime();
 
         const filteredPhotos = photos.filter(photo => {
             const photoDate = new Date(photo.timestamp).getTime();
-            return now - photoDate < twoDaysInMillis;
+            return now - photoDate < threeDaysInMillis;
         });
 
         localStorage.setItem('photos', JSON.stringify(filteredPhotos));
@@ -107,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Limpar a galeria e recarregar as fotos válidas
         photoGallery.innerHTML = '';
         filteredPhotos.forEach(photo => {
-            addPhoto(photo.url);
+            addPhoto(photo.url, getFormattedDate(new Date(photo.timestamp)));
         });
     }
 
@@ -116,6 +122,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let photos = getSavedPhotos();
         photos = photos.filter(photo => photo.url !== url);
         localStorage.setItem('photos', JSON.stringify(photos));
+    }
+
+    // Função para obter data formatada com dia da semana e data
+    function getFormattedDate(date) {
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        const day = daysOfWeek[date.getDay()];
+        const formattedDate = `${day}, ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        return formattedDate;
     }
 
     // Remover fotos expiradas ao carregar a página
